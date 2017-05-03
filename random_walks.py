@@ -214,23 +214,37 @@ class styleIterator(object):
         self.styles =styles
 
     def nextStyle(self):
+        ''' ring implementation
+        self.index takes values in range(0,len(self.styles)) 
+        refer to ringIndexing.py'''
         result = self.styles[self.index]
+        # if maximum value of self.index is reached
         if self.index == len(self.styles) - 1:
-            self.index = 0
+            self.index = 0    # make self.index = 0
         else:
             self.index += 1
         return result
 
+# although this function returns useful results, we use it as a helper function
 def simDrunk(numTrials, dClass, walkLengths):
+    ''' numTrials:int, dClass: Drunk, walkLengths:(numSteps:int) -> meanDistances:[float]
+    returns a list of mean distances covered for each numSteps steps in walkLengths
+    (covered by the dClass drunk in numTrials trials)'''
     meanDistances = []
     for numSteps in walkLengths:
-        print('Starting simulation of ', numSteps, ' steps')
+        print('Starting simulation of ', numSteps, ' steps')    # this step is not necessary
+        # we include it just to see that the simulation is making progress
         trials = simWalks(numSteps, numTrials, dClass)
         mean = sum(trials)/len(trials)
         meanDistances.append(mean)
     return meanDistances
 
+# meanDist = simDrunk(100, UsualDrunk, (10, 100, 1000))
+# print(meanDist)
+
 def simAllPlot(drunkKinds, walkLengths, numTrials):
+    ''' drunkKinds:(dClass:Drunk), walkLengths:(numSteps:int), numTrials:int
+    simulates and plots all types of drunks using simDrunk and pylab '''
     styleChoice = styleIterator(('m-', 'b--', 'g-.'))
     for dClass in drunkKinds:
         curStyle = styleChoice.nextStyle()
@@ -246,6 +260,7 @@ def simAllPlot(drunkKinds, walkLengths, numTrials):
 # simAllPlot((UsualDrunk, ColdDrunk), numSteps, 100)
 
 def getFinalLocs(numSteps, numTrials, dClass):
+    ''' returns where a walk ends '''
     locs = []
     d = dClass()
     for t in range(numTrials):
@@ -260,6 +275,8 @@ def plotLocs(drunkKinds, numSteps, numTrials):
     styleChoice = styleIterator(('k+', 'r^', 'mo'))
     for dClass in drunkKinds:
         locs = getFinalLocs(numSteps, numTrials, dClass)
+        # we convert the x and y locations to arrays, because this allows us to take the
+        # absolute values of the elements very conveniently
         xVals, yVals = [], []
         for loc in locs:
             xVals.append(loc.getX())
@@ -274,15 +291,20 @@ def plotLocs(drunkKinds, numSteps, numTrials):
     pylab.ylim(-1000, 1000)
     pylab.xlim(-1000, 1000)
     pylab.ylabel('Steps North/South of Origin')
-    pyla.xlabel('Steps East/West of Origin')
+    pylab.xlabel('Steps East/West of Origin')
     pylab.legend(loc = 'upper left')
 
 # plotLocs((UsualDrunk, ColdDrunk), 10000, 1000)
 
+# let's chamge the properties of the field
+# let's add wormholes to the field
+# a wormhole is a hypothetical topological feature that's a shortcut connecting two separate points in space and time
 class OddField(Field):
     def __init__(self, numHoles = 1000, xRange = 100, yRange = 100):
         Field.__init__(self)
-        self.wormholes = {}
+        self.wormholes = {}    # maps locations to locations
+        # for instances of OddField, this dict is initialized with some randomly chosen locations as keys
+        # and some randomly chosen locations as values
         for w in range(numHoles):
             x = random.randint(-xRange, xRange)
             y = random.randint(-yRange, yRange)
@@ -295,17 +317,23 @@ class OddField(Field):
         Field.moveDrunk(self, drunk)
         x = self.drunks[drunk].getX()
         y = self.drunks[drunk].getY()
+        # if the drunk lands on a location in the keys of wormholes, he's instantaneously
+        # teleported to the value associated with that key
         if (x, y) in self.wormholes:
             self.drunks[drunk] = self.wormholes[(x, y)]
 
 
 def traceWalk(fieldKinds, numSteps):
+    ''' plots the trajectory of the walk '''
     styleChoice =styleIterator(('b+', 'r^', 'ko'))
+    # iterate over types of fields
     for fClass in fieldKinds:
         d = UsualDrunk()
         f = fClass()
+        # add drunk to field
         f.addDrunk(d, Location(0, 0))
         locs = []
+        # move drunk numSteps steps
         for s in range(numSteps):
             f.moveDrunk(d)
             locs.append(f.getLoc(d))
@@ -314,13 +342,19 @@ def traceWalk(fieldKinds, numSteps):
             xVals.append(loc.getX())
             yVals.append(loc.getY())
         curStyle = styleChoice.nextStyle()
+        # plot for each field type
         pylab.plot(xVals, yVals, curStyle, label = fClass.__name__)
     pylab.title('Spots Visited on Walk (' + str(numSteps) + ' steps)')
     pylab.xlabel('Steps East/West of Origin')
     pylab.ylabel('Steps North/South of Origin')
     pylab.legend(loc = 'best')
 
-# traceWalk((Field, OddField), 500)
+traceWalk((Field, OddField), 500)
+'''
+from the plot, we see that in the regular field, the drunk revisits the same point multiple times,
+while, in the OddField, because of the wormholes, the drunk shows up in lots of different places and so
+there is less overlap.
+'''
 
 
 
