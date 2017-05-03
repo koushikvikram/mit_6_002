@@ -14,8 +14,9 @@ def ringIndexing(numRange, listLen):
     out = []
     for i in range(numRange):
         out.append(index)
+        # if maximum index value is reached
         if index == listLen - 1:
-            index = 0
+            index = 0    # make index 0
         else:
             index += 1
     return out
