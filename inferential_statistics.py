@@ -132,6 +132,8 @@ def findPocketReturn(game, numTrials, trialSize, toPrint):
         pocketReturns.append(trialVals[2])
     return pocketReturns
     
+
+'''
 random.seed(0)
 numTrials = 20
 resultDict = {}    # maps a game to a list of results for that game
@@ -149,6 +151,8 @@ for numSpins in (100, 1000, 10000, 100000):
         pocketReturns = findPocketReturn(G(), numTrials, numSpins, False)
         # print the % mean of expected return
         print('Exp. return for ', G(), '=', str(100*sum(pocketReturns)/float(len(pocketReturns))) + '%')
+'''
+
 
 def getMeanAndStd(X):
     ''' X:(float) -> mean:float, std:float
@@ -165,6 +169,7 @@ def getMeanAndStd(X):
 - ~95% of data within 1.96 standard deviations of mean
 - ~99.7% of data within 3 standard deviations of mean '''
 
+'''
 # Applying empirical rule
 numTrials = 20
 resultDict = {}
@@ -182,4 +187,37 @@ for numSpins in (100, 1000, 10000):
         resultDict[G().__str__()].append((numSpins, 100*mean, 100*std))
         print('Exp. return for ', G(), ' = ', str(round(100*mean, 3)) + '%, ', '+/- ' + 
         str(round(100*1.96*std, 3)) + '% with 95% confidence')
+'''        
+
+# Distributions
+# Generating normal distributions
+import pylab
+dist = []
+for i in range(100000):
+    dist.append(random.gauss(0, 30))
+pylab.hist(dist, 30)
+
+# Checking empirical rule
+import scipy.integrate
+
+def gaussian(x, mu, sigma):
+    factor1 = (1.0/(sigma*((2*pylab.pi)**0.5)))
+    factor2 = pylab.e**-( ( (x - mu)**2) / (2*sigma**2) )
+    return factor1*factor2
     
+def checkEmpirical(numTrials):
+    for t in range(numTrials):
+        mu = random.randint(-10, 10)
+        sigma = random.randint(1, 10)
+        print('For mu = ', mu, 'and sigma = ', sigma)
+        for numStd in (1, 1.96, 3):
+            area = scipy.integrate.quad(gaussian, mu-numStd*sigma, mu+numStd*sigma, (mu, sigma))[0]
+            print('Fraction within ', numStd, 'std = ', round(area, 4))
+
+# checkEmpirical(3)
+
+# note that the empirical rule applies only to normal distributions
+
+
+
+        
